@@ -7,6 +7,7 @@
     "maxVolume": 100,
     "autoLeave": true,
     "autoLeaveCooldown": 600000,
+    "TOKEN": "MTA0NDMyNjM3MjMxMjYxNzA0MQ.GPy53_.qWqlUOwibiPgEOku8f4MGfif-nwjsa0mBw4rm0",
     "displayVoiceState": true,
     "port": 33333
 }
