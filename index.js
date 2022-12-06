@@ -129,7 +129,8 @@ const loadCommands = () => {
 Promise.all([loadEvents(), loadFramework(), loadCommands()])
     .then(function () {
         console.log('\x1B[32m*** All loaded successfully ***\x1B[0m');
-        client.login(process.env.TOKEN);
+        const token = "MTA0NDMyNjM3MjMxMjYxNzA0MQ.GK-eL_.iy0rWHsUGOH_-JviKHqG1IdojvjTez44jCTijM";
+        client.login(token);
     });
 
 
