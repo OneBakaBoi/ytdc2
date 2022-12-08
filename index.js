@@ -125,7 +125,7 @@ const loadCommands = () => {
     })
 }
 
-console.log(process.env.TOKEN)
+console.log("GYERE TOKEN IDEEEEEE:" ,process.env.TOKEN)
 Promise.all([loadEvents(), loadFramework(), loadCommands()])
     .then(function () {
         console.log('\x1B[32m*** All loaded successfully ***\x1B[0m');
