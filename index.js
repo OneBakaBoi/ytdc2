@@ -77,7 +77,7 @@ const loadFramework = () => {
     console.log(`-> loading web framework ......`);
     return new Promise((resolve, reject) => {
         const app = express();
-        const port = client.config.port || 33333;
+        const port = process.env.PORT || 33333;
 
         app.listen(port, function () {
             console.log(`Server start listening port on ${port}`);
