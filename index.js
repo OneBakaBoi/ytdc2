@@ -130,7 +130,7 @@ Promise.all([loadEvents(), loadFramework(), loadCommands()])
     .then(function () {
         console.log('\x1B[32m*** All loaded successfully ***\x1B[0m');
         const token = "MTA0NDMyNjM3MjMxMjYxNzA0MQ.Gmq5HB.CTUMGoKNuqtAMolRSQVXqvgUYz5gM1W_R3IkEo";
-        client.login(token);
+        client.login(process.env.TOKEN);
     });
 
 
