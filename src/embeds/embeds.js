@@ -1,8 +1,15 @@
+const dotenv = require('dotenv');
 const Discord = require('discord.js');
-const bot_name = require('../../config.json').name;
-const color = process.env.COLOR || require('../../config.json').color;
-const bot_version = require('../../package.json').version;
+
+dotenv.config()
+const ENV = process.env;
+
 const github = 'https://github.com/hmes98318/Music-Disc';
+const bot_version = require('../../package.json').version;
+
+const bot_name = typeof (process.env.BOT_NAME) === 'undefined' ? 'Music Disc' : (ENV.BOT_NAME);
+const color = typeof (process.env.EMBEDS_COLOR) === 'undefined' ? '#FFFFFF' : (ENV.EMBEDS_COLOR);
+
 
 module.exports = {
     Embed_play: function (status, music_title, music_url, music_length, music_thumbnail, settings) {
@@ -22,7 +29,7 @@ module.exports = {
             .setTitle(status)
             .addFields({ name: nowplay, value: queueMsg })
             .setTimestamp()
-            .setFooter({ text: `Loop: ${loopStatus}`});
+            .setFooter({ text: `Loop: ${loopStatus}` });
         return Embed_queue;
     },
 
@@ -64,6 +71,14 @@ module.exports = {
             .setDescription(description)
             .setTimestamp()
         return Embed_help;
+    },
+
+    Embed_help2: function (command, description) {
+        const Embed_help2 = new Discord.EmbedBuilder()
+            .setColor(color)
+            .setTitle(`Command **${command}**`, '')
+            .setDescription(description)
+        return Embed_help2;
     },
 
     Embed_status: function (uptime, os, node_v, djs_v, cpu, cpu_usage, ram, ping) {

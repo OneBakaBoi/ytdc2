@@ -1,4 +1,4 @@
-<img width="150" height="150" align="right" style="float: right; margin: 0 10px 0 0;" alt="music_disc" src="https://i.imgur.com/JWSIlSt.png">
+<img width="150" height="150" align="right" style="float: right; margin: 0 10px 0 0;" alt="music_disc" src="public/imgs/logo2.png">
 
 # Music Disc 
 
@@ -12,53 +12,47 @@ Supports **YouTube**, **Spotify**, **SoundCloud** streams.
 
 
 ### Reference version  
-[**node.js  `v18.12.1`**](https://nodejs.org/en/)  
-[**discord.js  `v14.6.0`**](https://www.npmjs.com/package/discord.js)  
+[**node.js  `v18.14.2`**](https://nodejs.org/en/)  
+[**discord.js  `v14.7.1`**](https://www.npmjs.com/package/discord.js)  
 
 
 ## Deploying with node.js
 
 ### Clone the repository
 ```
-git clone -b v1.2.5 https://github.com/hmes98318/Music-Disc.git
+git clone -b v1.2.7 https://github.com/hmes98318/Music-Disc.git
 ```
 or [**click here**](https://github.com/hmes98318/Music-Disc/releases) to download  
 
 
 ### Install the dependencies
-auto install all dependencies on [`package.json`](./package.json)  
+install all the dependencies from [`package.json`](./package.json)  
 ```
 npm install
 ```
 
-### Configure Files
+### Configure environment
 [`.env`](./.env) 
 ```env
 TOKEN = "your_token"
+NAME = "Music Disc"
+PREFIX = "+"
+PLAYING = "+help | music"
+COLOR = "#FFFFFF"
+DEFAULT_VOLUME = 50
+MAX_VOLUME = 100
+AUTO_LEAVE = true
+AUTO_LEAVE_COOLDOWN = 5000
+DISPLAY_VOICE_STATE = true
+PORT = 33333
 ```
-
-[`config.json`](./config.json)  
-```json
-{
-    "name": "Music Disc",
-    "prefix": "+",
-    "playing": "+help | music",
-    "color": "#FFFFFF",
-    "defaultVolume": 50,
-    "maxVolume": 100,
-    "autoLeave": true,
-    "autoLeaveCooldown": 5000,
-    "displayVoiceState": true,
-    "port": 33333
-}
-```
-**`autoLeave`** : After the music finished, can choose whether let the bot leave voice channel automatically or not.  
-**`autoLeaveCooldown`** : Timer for auto disconnect(ms).  
-**`displayVoiceState`** : Show voice channel status updates.   
+**`AUTO_LEAVE`** : After the music finished, can choose whether let the bot leave voice channel automatically or not.  
+**`AUTO_LEAVE_COOLDOWN`** : Timer for auto disconnect(ms).  
+**`DISPLAY_VOICE_STATE`** : Show voice channel status updates.   
 
 ## Running the script 
 ```
-node index.js
+npm run start
 ```
 
 
@@ -69,7 +63,7 @@ node index.js
 version: '3.8'
 services:
   music-disc:
-    image: hmes98318/music-disc:1.2.5
+    image: hmes98318/music-disc:1.2.7
     container_name: music-disc
     restart: always
     environment:

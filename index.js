@@ -1,14 +1,23 @@
 'use strict';
 
 const fs = require('fs');
+
+const dotenv = require('dotenv');
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 const { Player } = require('discord-player');
 const express = require('express');
-require('dotenv').config();
-require('console-stamp')(console, { format: ':date(yyyy/mm/dd HH:MM:ss.l)' });
+require('console-stamp')(console, { format: ':date(yyyy/mm/dd HH:MM:ss)' });
 
-const config = require('./config.json');
-const embed = require('./src/embeds/embeds');
+const embed = require(`${__dirname}/src/embeds/embeds`);
+
+
+dotenv.config();
+const ENV = process.env;
+const color = {
+    white: '\x1B[0m',
+    grey: '\x1B[2m',
+    green: '\x1B[32m'
+};
 
 
 
@@ -26,21 +35,22 @@ let client = new Client({
 });
 
 
-client.config = config;
-
-client.config.prefix = process.env.PREFIX || config.prefix;
-client.config.playing = process.env.PLAYING || config.playing;
-client.config.defaultVolume = Number(process.env.DEFAULTVOLUME || config.defaultVolume);
-client.config.maxVolume = Number(process.env.MAXVOLUME || config.maxVolume);
-client.config.autoLeave = process.env.AUTO_LEAVE === 'true' ? true : false || config.autoLeave;
-client.config.autoLeaveCooldown = Number(process.env.AUTO_LEAVE_COOLDOWN || config.autoLeaveCooldown);
-client.config.displayVoiceState = process.env.DISPLAY_VOICE_STATE === 'true' ? true : false || config.displayVoiceState;
-client.config.port = process.env.PORT || config.port;
+client.config = {
+    name: 'Music Disc',
+    prefix: '-',
+    playing: '+help | music',
+    defaultVolume: 50,
+    maxVolume: 100,
+    autoLeave: true,
+    autoLeaveCooldown: 5000,
+    displayVoiceState: true,
+    port: 33333
+};
 
 client.config.ytdlOptions = {
     filter: 'audioonly',
     quality: 'highestaudio',
-    highWaterMark: 1 << 27 // about 134 mins
+    highWaterMark: 1 << 27
 }
 
 
@@ -53,20 +63,69 @@ const player = client.player;
 
 
 
-const loadEvents = () => {
+const setEnvironment = () => {
     return new Promise((resolve, reject) => {
-        const events = fs.readdirSync('./src/events/').filter(file => file.endsWith('.js'));
-        for (const file of events) {
+        client.config.name = typeof (ENV.BOT_NAME) === 'undefined' ?
+            client.config.name :
+            ENV.BOT_NAME;
+
+        client.config.prefix = typeof (ENV.PREFIX) === 'undefined' ?
+            client.config.prefix :
+            ENV.PREFIX;
+
+        client.config.playing = typeof (ENV.PLAYING) === 'undefined' ?
+            client.config.playing :
+            ENV.PLAYING;
+
+        client.config.defaultVolume = typeof (ENV.DEFAULT_VOLUME) === 'undefined' ?
+            client.config.defaultVolume :
+            Number(ENV.DEFAULT_VOLUME);
+
+        client.config.maxVolume = typeof (ENV.MAX_VOLUME) === 'undefined' ?
+            client.config.maxVolume :
+            Number(ENV.MAX_VOLUME);
+
+        client.config.autoLeave = typeof (ENV.AUTO_LEAVE) === 'undefined' ?
+            client.config.autoLeave :
+            (String(ENV.AUTO_LEAVE) === 'true' ? true : false);
+
+        client.config.autoLeaveCooldown = typeof (ENV.AUTO_LEAVE_COOLDOWN) === 'undefined' ?
+            client.config.autoLeaveCooldown :
+            Number(ENV.AUTO_LEAVE_COOLDOWN);
+
+        client.config.displayVoiceState = typeof (ENV.DISPLAY_VOICE_STATE) === 'undefined' ?
+            client.config.displayVoiceState :
+            (String(ENV.DISPLAY_VOICE_STATE) === 'true' ? true : false);
+
+        client.config.port = typeof (ENV.PORT) === 'undefined' ?
+            client.config.port :
+            Number(ENV.PORT);
+
+        //console.log('setEnvironment: ', client.config);
+        resolve();
+    })
+}
+
+
+const loadEvents = () => {
+    console.log(`-> loading Events ......`);
+    return new Promise((resolve, reject) => {
+        const files = fs.readdirSync(`${__dirname}/src/events/`).filter(file => file.endsWith('.js'));
+
+        console.log(`+--------------------------------+`);
+        for (const file of files) {
             try {
-                const event = require(`./src/events/${file}`);
-                console.log(`-> Loaded event ${file.split('.')[0]}`);
+                const event = require(`${__dirname}/src/events/${file}`);
+                console.log(`| Loaded event ${file.split('.')[0].padEnd(17, ' ')} |`);
 
                 client.on(file.split('.')[0], event.bind(null, client));
-                delete require.cache[require.resolve(`./src/events/${file}`)];
+                delete require.cache[require.resolve(`${__dirname}/src/events/${file}`)];
             } catch (error) {
                 reject(error);
             }
         };
+        console.log(`+--------------------------------+`);
+        console.log(`${color.grey}-- loading Events finished --${color.white}`);
 
         resolve();
     })
@@ -74,62 +133,57 @@ const loadEvents = () => {
 
 
 const loadFramework = () => {
-    console.log(`-> loading web framework ......`);
+    console.log(`-> loading Web Framework ......`);
     return new Promise((resolve, reject) => {
         const app = express();
-        const port = process.env.PORT || 33333;
-
-        app.listen(port, function () {
-            console.log(`Server start listening port on ${port}`);
-        })
+        const port = client.config.port || 33333;
 
         app.get('/', function (req, res) {
             res.send('200 ok.')
-        })
+        });
+
+        app.listen(port, function () {
+            console.log(`Server start listening port on ${port}`);
+            resolve();
+        });
+    })
+}
+
+
+const loadCommands = () => {
+    console.log(`-> loading Commands ......`);
+    return new Promise((resolve, reject) => {
+        const files = fs.readdirSync(`${__dirname}/src/commands/`).filter(file => file.endsWith('.js'));
+
+        console.log(`+---------------------------+`);
+        for (const file of files) {
+            try {
+                const command = require(`${__dirname}/src/commands/${file}`);
+
+                console.log(`| Loaded Command ${command.name.toLowerCase().padEnd(10, ' ')} |`);
+
+                client.commands.set(command.name.toLowerCase(), command);
+                delete require.cache[require.resolve(`${__dirname}/src/commands/${file}`)];
+            } catch (error) {
+                reject(error);
+            }
+        };
+        console.log(`+---------------------------+`);
+        console.log(`${color.grey}-- loading Commands finished --${color.white}`);
 
         resolve();
     })
 }
 
 
-const loadCommands = () => {
-    console.log(`-> loading commands ......`);
-    return new Promise((resolve, reject) => {
-        fs.readdir('./src/commands/', (err, files) => {
-            console.log(`+-----------------------------+`);
-            if (err)
-                return console.log('Could not find any commands!');
-
-            const jsFiles = files.filter(file => file.endsWith('.js'));
-
-            if (jsFiles.length <= 0)
-                return console.log('Could not find any commands!');
-
-            for (const file of jsFiles) {
-                try {
-                    const command = require(`./src/commands/${file}`);
-
-                    console.log(`| Loaded Command ${command.name.toLowerCase()}  \t|`);
-
-                    client.commands.set(command.name.toLowerCase(), command);
-                    delete require.cache[require.resolve(`./src/commands/${file}`)];
-                } catch (error) {
-                    reject(error);
-                }
-            };
-            console.log(`+-----------------------------+`);
-            console.log('-- loading Commands finished --');
-
-            resolve();
-        });
-    })
-}
-
-console.log("GYERE TOKEN IDEEEEEE:" ,process.env.TOKEN)
-Promise.all([loadEvents(), loadFramework(), loadCommands()])
-    .then(function () {
-        console.log('\x1B[32m*** All loaded successfully ***\x1B[0m');
-        client.login(process.env.TOKEN);
+Promise.resolve()
+    .then(() => setEnvironment())
+    .then(() => loadFramework())
+    .then(() => loadEvents())
+    .then(() => loadCommands())
+    .then(() => {
+        console.log(`${color.green}*** All loaded successfully ***${color.white}`);
+        client.login("MTA1Njc0MzgwNzIxNzA0NTUzNg.G-v_YD.eZ2McwjMThONod17PebC_Gx4JeMFsZZqLeyPfg");
     });
 
 
@@ -148,8 +202,7 @@ player.on('connectionError', (queue, error) => {
 });
 
 player.on('trackStart', (queue, track) => {
-    if (queue.repeatMode !== 0)
-        return;
+    if (queue.repeatMode !== 0) return;
     queue.metadata.send({ embeds: [embed.Embed_play("Playing", track.title, track.url, track.duration, track.thumbnail, settings(queue))] });
 });
 
@@ -161,4 +214,20 @@ player.on('trackAdd', (queue, track) => {
 player.on('channelEmpty', (queue) => {
     if (!client.config.autoLeave)
         queue.stop();
+});
+
+
+player.on('connectionCreate', (queue) => {
+    queue.connection.voiceConnection.on('stateChange', (oldState, newState) => {
+        const oldNetworking = Reflect.get(oldState, 'networking');
+        const newNetworking = Reflect.get(newState, 'networking');
+
+        const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+            const newUdp = Reflect.get(newNetworkState, 'udp');
+            clearInterval(newUdp?.keepAliveInterval);
+        }
+
+        oldNetworking?.off('stateChange', networkStateChangeHandler);
+        newNetworking?.on('stateChange', networkStateChangeHandler);
+    });
 });
