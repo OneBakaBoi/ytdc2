@@ -183,7 +183,7 @@ Promise.resolve()
     .then(() => loadCommands())
     .then(() => {
         console.log(`${color.green}*** All loaded successfully ***${color.white}`);
-        client.login("MTA1Njc0MzgwNzIxNzA0NTUzNg.G-v_YD.eZ2McwjMThONod17PebC_Gx4JeMFsZZqLeyPfg");
+        client.login(ENV.TOKEN);
     });
 
 
